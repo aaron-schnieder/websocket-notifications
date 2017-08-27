@@ -1,0 +1,53 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/iron-collapse/iron-collapse.html">
+
+<dom-module id="cmp-message-raw">
+    <template>
+        <style include="shared-styles">
+            .expandlink {
+                text-decoration: underline;
+                color: blue;
+            }
+
+            iron-collapse {
+                border: 1px solid #dedede;
+                border-top: none;
+                border-bottom-left-radius: 5px;
+                border-bottom-right-radius: 5px;
+                padding: 10px;
+                @apply --shadow-elevation-2dp;
+            }
+        </style>
+        <b>Raw Message:</b> <a class="expandlink" on-click="toggleCollapse">Expand</a>
+        <iron-collapse id="messagecollapse">
+            <div>    
+                {{convertToString(message)}}
+            </div>
+        </iron-collapse>
+        </template>
+    </template>
+    <script>
+        class CmpMessageRaw extends Polymer.Element {
+            static get is() { return "cmp-message-raw"; }
+
+            static get properties() {
+                return {
+                    message: {
+                        type: Object
+                    }
+                }
+            }
+
+            convertToString(json) {
+                return JSON.stringify(json);
+            }
+
+            toggleCollapse() {
+                this.$.messagecollapse.toggle();
+            }
+        }
+
+        window.customElements.define(CmpMessageRaw.is, CmpMessageRaw);
+    </script>
+</dom-module>

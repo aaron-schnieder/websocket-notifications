@@ -1,0 +1,22 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+
+<link rel="import" href="cmp-notification-grid.html">
+
+<dom-module id="my-notification-history">
+    <template>
+        <style include="shared-styles">
+        </style>
+        <div class="card">
+            <h1>Notification History</h1>
+        </div>
+        <cmp-notification-grid></cmp-notification-grid>
+    </template>
+    <script>
+        class MyNotificationHistory extends Polymer.Element {
+            static get is() { return 'my-notification-history'; }
+        }
+
+        window.customElements.define(MyNotificationHistory.is, MyNotificationHistory);
+    </script>
+</dom-module>

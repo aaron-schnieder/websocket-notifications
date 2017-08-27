@@ -1,0 +1,86 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+
+<dom-module id="cmp-notification-toast">
+    <template>
+        <style>
+            .fit-bottom {
+                left: auto !important;
+            }
+            .close-button {
+                text-transform: none;
+                color: #82B1FF;
+            }
+            .error {
+                --paper-toast-background-color: #F44336;
+                --paper-toast-color: #f1f1f1;
+            }
+            .warning {
+                --paper-toast-background-color: #eeff41;
+                --paper-toast-color: #323232;
+            }
+            .information {
+                --paper-toast-background-color: #323232;
+                --paper-toast-color: #f1f1f1;
+            }
+        </style>
+        <paper-toast id="notificationToast" duration="0" class="fit-bottom">
+            <paper-button on-tap="_closeNotificationToast" class="close-button">Close Notification</paper-button>
+        </paper-toast>
+    </template>
+    <script>
+        class CmpNotificationToast extends Polymer.Element {
+            static get is() { return "cmp-notification-toast"; }
+
+            static get properties() {
+                return {
+                    currentNotification: {
+                        type: Object,
+                        observer: '_notificationChanged'
+                    }
+                }
+            }
+
+            _notificationChanged(newValue, oldValue) {
+                this._clearToastClasslist();
+                this._openToast(newValue);
+            }
+
+            _closeNotificationToast() {
+                this.$.notificationToast.toggle();
+            }
+
+            _openToast(notification) {
+                // set the class based on the message type
+                if(notification.type == 'error') {
+                    this.$.notificationToast.classList.add('error');
+                } else if(notification.type == 'warning') {
+                    this.$.notificationToast.classList.add('warning');
+                } else {
+                    this.$.notificationToast.classList.add('information');
+                }
+
+                // set the toast message
+                let toastMessage = this._getToastMessage(notification);
+                this.$.notificationToast.text = toastMessage;
+                this.$.notificationToast.open()
+            }
+
+            _getToastMessage(notification) {
+                
+                let toastMessage = "Notification received. Timestamp: " + notification.timestamp 
+                                    + " | Type: " + notification.type 
+                                    + " | Message: " + notification.message.description;
+                return toastMessage;
+            }
+
+            _clearToastClasslist() {
+                this.$.notificationToast.classList.remove('error', 'information', 'warning');
+            }
+        }
+
+        window.customElements.define(CmpNotificationToast.is, CmpNotificationToast);
+    </script>
+</dom-module>

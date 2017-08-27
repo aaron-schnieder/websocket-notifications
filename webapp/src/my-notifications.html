@@ -1,0 +1,98 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="cmp-notification.html">
+<link rel="import" href="cmp-notification-toast.html">
+
+<dom-module id="my-notifications">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+        padding: 10px;
+      }
+
+      .fit-bottom {
+        left: auto !important;
+      }
+    </style>
+    <paper-toast id="connectionStatusToast" class="fit-bottom"></paper-toast>
+    <cmp-notification-toast current-notification="[[currentNotification]]"></cmp-notification-toast>
+    <div class="card">
+      <h1>Notifications</h1>
+    </div>
+    <cmp-notification notifications="[[notifications]]"></cmp-notification>
+  </template>
+  <script>
+    class MyNotifications extends Polymer.Element {
+      static get is() { return 'my-notifications'; }
+
+      static get properties() {
+        return {
+          notifications: {
+            type: Array,
+            value: []
+          },
+          currentNotification: {
+            type: String
+          }
+        }
+      }
+
+      constructor() {
+        super();
+
+        // set the protocol and path for the Notifications API URI
+        var protocol = location.protocol === "https:" ? "wss:" : "ws:";
+        var wsUri = protocol + "//" + Polymer.apiRoot + "/notifications/ws";
+        
+        // create a new websocket using the URI
+        var socket = new WebSocket(wsUri);
+        
+        // open a web socket
+        socket.onopen = e => {
+          this.$.connectionStatusToast.text = "Server connection opened successfully.";
+          this.$.connectionStatusToast.open();
+            console.log("socket opened", e);
+        };
+ 
+        // handle socket closing
+        socket.onclose = function (e) {
+            console.log("socket closed", e);
+        };
+ 
+        // handle new messages received over the websocket
+        socket.onmessage = this._notificationReceived.bind(this);
+ 
+        // handle web socket errors
+        socket.onerror = function (e) {
+            console.error(e.data);
+        };
+      }
+
+      // handler function when notifications are received
+      _notificationReceived(e) {
+
+        // parse the message received
+        let notification = JSON.parse(e.data);
+        
+        try {
+          // parse the message in the notification to JSON
+          let messageJson = JSON.parse(notification.message);
+          notification.message = messageJson;
+        } catch(exception) {
+          console.log("Error parsing notification message: " + exception);
+        }
+
+        // add the notification to the notifications array
+        this.push('notifications', notification);
+
+        // set the curentNotification to bring up the toast message
+        this.set('currentNotification', notification);
+      }
+    }
+
+    window.customElements.define(MyNotifications.is, MyNotifications);
+  </script>
+</dom-module>

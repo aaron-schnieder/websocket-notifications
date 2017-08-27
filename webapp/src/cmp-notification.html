@@ -1,0 +1,38 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="cmp-message-raw.html">
+
+<dom-module id="cmp-notification">
+    <template>
+        <style include="shared-styles">
+            
+        </style>
+        <template is="dom-repeat" items="[[notifications]]">
+            <div class="card">
+                <h3>Notification</h3>
+                <b>Timestamp</b> {{item.timestamp}}
+                <br/>
+                <b>Type:</b> {{item.type}}
+                <br/>
+                <b>Description:</b> {{item.message.description}}
+                <br/>
+                <cmp-message-raw message="[[item.message]]"></cmp-message-raw>
+            </div>
+        </template>
+    </template>
+    <script>
+        class CmpNotification extends Polymer.Element {
+            static get is() { return "cmp-notification"; }
+
+            static get properties() {
+                return {
+                    notifications: {
+                        type: Array
+                    }
+                }
+            }
+        }
+
+        window.customElements.define(CmpNotification.is, CmpNotification);
+    </script>
+</dom-module>

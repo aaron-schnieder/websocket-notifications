@@ -1,0 +1,117 @@
+<link rel="import" href="../bower_components/polymer/polymer-element.html">
+<link rel="import" href="shared-styles.html">
+<link rel="import" href="../bower_components/vaadin-grid/vaadin-grid.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="cmp-notification-grid">
+    <template>
+        <style include="shared-styles" is="custom-style">
+            vaadin-grid#grid {
+                --vaadin-grid-cell: { 
+                    padding: 0px;
+                    text-align: left;
+                    box-sizing: border-box; 
+                    line-height: 27px;
+                    };
+                --vaadin-grid-header-cell: {
+                    color: black;
+                };
+            }
+            vaadin-grid#grid .alert{
+                color: black;
+                background-color: rgba(244, 67, 54, 0.75);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            vaadin-grid#grid .warning{
+                color: black;
+                background: rgba(238, 255, 65, 0.75);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            vaadin-grid#grid .info{
+                color: black;
+                background: rgba(49, 196, 66, 0.75);
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        </style>
+        <div class="card">
+
+            <!-- Get the notifications to be shown in the grid, default is 30 days -->
+            <iron-ajax 
+                auto
+                url="[[apiUri]]"
+                handle-as="json" 
+                last-response="{{notifications}}"
+                headers='{"cache-control": "no-cache"}'></iron-ajax>
+
+            <vaadin-grid id="grid" aria-label="Notifications" items="[[notifications]]">
+
+                <vaadin-grid-column width="100px" flex-grow="0">
+                    <template class="header">Device Id</template>
+                    <template>
+                        <div class$="{{item.type}}">[[item.deviceId]]&nbsp;</div>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                    <template class="header">Timestamp</template>
+                    <template>
+                        <div class$="{{item.type}}">[[item.timestamp]]&nbsp;</div>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                    <template class="header">Message</template>
+                    <template>
+                        <div class$="{{item.type}}" on-click="_showMessage">[[item.message]]&nbsp;</div>
+                    </template>
+                </vaadin-grid-column>
+
+                <vaadin-grid-column>
+                    <template class="header">Type</template>
+                    <template>
+                        <div class$="{{item.type}}">[[item.type]]</div>
+                    </template>
+                </vaadin-grid-column>
+
+            </vaadin-grid>
+        </div>
+    </template>
+    <script>
+        class CmpNotificationGrid extends Polymer.Element {
+            static get is() { return 'cmp-notification-grid'; }
+
+            static get properties() {
+                return {
+                    notifications: {
+                        type: Array,
+                        value: [],
+                        observer: '_notificationsChanged'
+                    },
+                    apiUri: {
+                        type: String,
+                        computed: '_getApiUri()'
+                    }
+                }
+            }
+
+            _notificationsChanged() {
+                console.log(this.notifications);
+            }
+
+            _showMessage(e) {
+                var item = e.model.item;
+                console.log("click");
+                window.alert(item.message);
+            }
+
+            _getApiUri() {
+                return location.protocol + "//" + Polymer.apiRoot + "/api/notifications";
+            }
+        }
+
+        window.customElements.define(CmpNotificationGrid.is, CmpNotificationGrid);
+    </script>
+</dom-module>
