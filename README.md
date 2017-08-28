@@ -1,14 +1,14 @@
 # websocket-notifications
 Polymer 2 and .NET Core based websocket notifications app.
 
-Real time notifications are critical for many business needs. Getting important information in real time so you can take quick action can make a big impact on your business and be the difference between happy customers and unhappy customers. There are many options for real time notifications if you have internet and/or cellular connectivity: Web Push Notifications, SMS messaging, native app alerts and even email. But what do you do in an on-prem offline scenario? What happens if you lose internet connectivity and cellular connects? Getting real time alerts is still critical... so here is a solution to the problem.
+Real time notifications are critical for many business needs. Getting important information in real time so you can take quick action can make a big impact on your business and be the difference between happy customers and unhappy customers. There are many options for real time notifications if you have internet and/or cellular connectivity: Web Push Notifications, SMS messaging, native app alerts and even email. But what do you do in an on-prem offline scenario? What happens if you lose internet connectivity and cellular connection? Getting real time alerts is still critical... so here is a cross platform solution to the problem using Websockets and Polymer 2.
 
 ## Scenario
-So let's summarize the requirements for our scenario.
+So lets summarize the requirements for our scenario.
 1. Real time notifications, alerts and warnings
 2. Runs in a disconnected / offline environment (no internet / cellular dependencies)
 3. Server side runs on any platform (Windows, Linux, etc.)
-4. Client side runs in any browser and on modern devices (iOS, Android, etc.)
+4. Client side runs in any fairly modern browser and on modern devices (iOS, Android, etc.)
 5. Ability to view history of notifications
 
 ![Notifications Web App](https://i.imgur.com/7zuqCa8.png)
@@ -24,7 +24,8 @@ I wanted to make sure this solution was lightweight and as browser compatible as
 Let's go through each quickly.
 
 ### Polymer 2
-Anyone who as done any front end web development knows how quickly frameworks come in and out of favor in the JavaScript world. There's Knockout, Angular, React, Preact, VueJs, etc... just to name a few. The problem with all of them? The code you write is proprietary to the framework, which means if you ever want to use another framework or library, it is a lot of re-write. Thankfully new HTML/ECMAScript specs have added all of the functionality we need to build rich, component based web apps using web standard code. *No proprietary lock in!* Polymer 2 supports this wholeheartedly and just adds some unobtrusive sugar on top of the standards. #UseThePlatform. [Read more about it at the Polymer 2 site.](https://www.polymer-project.org/about)
+Anyone who as done any front end web development knows how quickly frameworks come in and out of favor in the JavaScript world. There's Knockout, Angular, React, Preact, VueJs, etc... just to name a few. The problem with all of them? The code you write is proprietary to the framework, which means if you ever want to use another framework or library, it is a lot of re-write. Thankfully new HTML/ECMAScript specs have added all of the functionality we need to build rich, component based web apps using web standard code. *No proprietary lock in!* Polymer 2 supports this wholeheartedly and just adds some unobtrusive sugar on top of the standards which allows us to [#UseThePlatform](https://twitter.com/hashtag/UseThePlatform?src=hash). 
+[Read more about it at the Polymer 2 site.](https://www.polymer-project.org/about)
 
 ### Websockets
 There are a number of options for communicating updates to a web app. 
@@ -36,9 +37,9 @@ There is **long polling**, which is a basically a loop in the browser to call a 
 So let's talk **Websockets**. 
 * [Websockets](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API) create an open communication session between a browser and a server. This means our web app can receive event-driven notifications from the server in real time with no polling.
 * [Browser compatibility](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API#Browser_compatibility) for the standards version (v13, RFC 6455) is great across the board (even IE11).
-* Multiple web apps can be open all will establish a separate web socket to our server, ensuring all web apps receive our notifications.
+* Multiple web apps can subscribe to listen to for notifications; each client will establish a separate web socket to our server, ensuring all web apps receive our notifications.
 * There are no internet requirements and we can host our web app and web sockets API in a disconnected on-prem environment.
-* There is no queuing mechanism, so if the web app isn't open when a notification is triggered, it will not receive it.
+* One drawback is there is no queuing mechanism, so if the web app isn't open when a notification is triggered, it will not receive it.
 
 For our needs Websockets solves all of our problems and we can live with the requirement of having the web app open to receive notifications.
 
@@ -55,11 +56,16 @@ I specifically chose [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core
 * Open-source and community-focused.
 
 ### SQLite
-[SQLite](https://www.sqlite.org/) is a very nice open source, lightweight, portable SQL based database engine. It is incredible small, can be used in embedded environments and has a lot of nice features. It also plays very nicely with ASP.NET Core as well as Node.
+[SQLite](https://www.sqlite.org/) is a very nice open source, lightweight, portable SQL based database engine. It is incredibly small, can be used in embedded environments and has a lot of nice features. It also plays very nicely with ASP.NET Core as well as Node.
 
-```
+```javascript
 /*
-Note: this isn't going to scale. The example app deploys a new instances of the SQLite DB for notifications to each server side API instance. In production, I recommend you use a shared persistence store. No real need for a relational DB here either, so a NoSQL solution like an on-prem MongoDB might be a better fit.
+Note: this isn't going to scale. 
+The example app deploys a new instances of a SQLite DB 
+for notifications to each server side API instance. 
+In production, I recommend you use a shared persistence store.
+No real need for a relational DB here either, so a NoSQL 
+solution like an on-prem MongoDB might be a better fit.
 */
 ```
 
@@ -80,18 +86,18 @@ Our ASP.NET Core API will expose three APIs:
 
 Our server side API will store all incoming notifications in SQLite and then broadcast them out via open web sockets to any client browsers that are listening.
 
-![Solution architecture diagram]()
+![Solution architecture diagram](https://i.imgur.com/lDu3Egq.png)
 
 ## Code
 All of the code for this app is in github at [https://github.com/aaron-schnieder/websocket-notifications](https://github.com/aaron-schnieder/websocket-notifications). 
 
-### Websockets server side API
+### Server side API - Websockets & RESTful endpoints
 I won't go through the basic plumbing code (models, etc.) but lets take a look at the key parts.
 
 #### Program.cs
-Program.cs is the entry point into our server side API that kicks of initialization. One of the key things to pay attention to is UseUrls. Make sure you don't use "http://localhost or http://127.0.0.1" or you will run into issues if you deploy this API in a docker container. You want to make sure that the app binds to whatever local network address the API is hosted on.
+Program.cs is the entry point into our server side API that kicks off initialization. One of the key things to pay attention to is UseUrls. Make sure you don't use "http://localhost or http://127.0.0.1" or you will run into issues if you deploy this API in a docker container. You want to make sure that the app binds to whatever local network address the API is hosted on.
 
-```
+```csharp
 var host = new WebHostBuilder()
     .UseKestrel()
     .UseContentRoot(Directory.GetCurrentDirectory())
@@ -106,9 +112,10 @@ var host = new WebHostBuilder()
 Startup.cs is the class that instantiates Websockets, SQLite and ASP.NET Web Api.
 
 **Websockets init**
+
 All of the Websockets init happens in the Configure method, which configures the HTTP request pipeline. Notice we are instantiating the use of a custom websockets middleware class.
 
-```
+```csharp
 /* WebSockets init options */
 var webSocketOptions = new WebSocketOptions()
 {
@@ -124,10 +131,11 @@ app.UseMiddleware<WebSocketsMiddleware>();
 ```
 
 **SQLite instantiation**
+
 We need a couple of calls to init SQLite.
 
 In the constructor...
-```
+```csharp
 // Create SQLite DB if it doesn't exist
 using (var client = new NotificationsContext())
 {
@@ -136,15 +144,16 @@ using (var client = new NotificationsContext())
 ```
 
 And then in the ConfigureServices method...
-```
+```csharp
 // Configure the SQLite DB
 services.AddEntityFrameworkSqlite().AddDbContext<NotificationsContext>();
 ```
 
 **CORS**
+
 We want to **bypass CORS during local development** so we can send browser HTTP requests from localhost. Notice I wrapped the allow all CORS policy in a compiler DEBUG statement so this doesn't make it into production.
 
-```
+```csharp
 #if DEBUG
     // Create an open CORS policy ** DON'T PUT THIS IN PRODUCTION **
     services.AddCors(o => o.AddPolicy("AllAllPolicy", builder =>
@@ -159,7 +168,7 @@ We want to **bypass CORS during local development** so we can send browser HTTP 
 #### WebSocketsMiddleware.cs
 Our custom middleware class gives us a handler that is invoked every time an HTTP request is processed. This allows us to intercept requests using the Websockets protocol and open a web socket communication channel with client web apps.
 
-```
+```csharp
 // we want to listen on a specific path for websocket communications
 if (context.Request.Path == "/notifications/ws")
 {
@@ -188,13 +197,13 @@ if (context.Request.Path == "/notifications/ws")
 #### NotificationsController.cs
 The NotificationsController contains our RESTful APIs.
 
-```
+```csharp
 // GET api/notifications
 [HttpGet]
 public ActionResult Get() {....}
 ```
 
-```
+```csharp
 // POST api/notifications
 [HttpPost]
 public async Task<ActionResult> Post([FromBody]Notification notification)
@@ -203,7 +212,7 @@ public async Task<ActionResult> Post([FromBody]Notification notification)
 #### NotificationManager.cs
 NotificationManager keeps track of notification subscribers and sends notifications when they are received.
 
-```
+```csharp
 // sends a notification to all subscribers
 public async Task SendNotificationAsync(Notification notification)
 {
@@ -221,9 +230,15 @@ public async Task SendNotificationAsync(Notification notification)
     }
 }
 ```
-```
+```javascript
 /*
-Note: another scalability item to point out here. For production workloads, this function should just write the notification out to a queue. A separate worker process should be running to process messages from the queue, persist the notifications and send them to subscribers. As implemented in this example, the solution is ripe for data loss.
+Note: another scalability item to point out here. 
+For production workloads, this function should just 
+write the notification out to a queue. A separate 
+worker process should be running to process messages
+from the queue, persist the notifications and send them 
+to subscribers. As implemented in this example, the 
+solution is ripe for data loss.
 */
 ```
 
@@ -235,7 +250,7 @@ So lets just look at the important stuff specific to the Websocket based notific
 #### index.html
 I added a config value for the path to the API URI to the global Polymer variable. You will need to change this to point to your local or deployed Notifications API server URI.
 
-```
+```javascript
 window.Polymer = {
     rootPath: '/',
     apiRoot: 'localhost:8081' // change this to your Notifications API server URI
@@ -245,7 +260,7 @@ window.Polymer = {
 #### my-notifications.html
 The constructor for this custom element spins up the web socket connection to the server side Notifications API.
 
-```
+```javascript
 // set the protocol and path for the Notifications API URI
 var protocol = location.protocol === "https:" ? "wss:" : "ws:";
 var wsUri = protocol + "//" + Polymer.apiRoot + "/notifications/ws";
@@ -263,14 +278,14 @@ socket.onopen = e => {
 
 We also register a handler for incoming messages.
 
-```
+```javascript
 // handle new messages received over the websocket
 socket.onmessage = this._notificationReceived.bind(this);
 ```
 
 And our handler for notifications...
 
-```
+```javascript
 // handler function when notifications are received
 _notificationReceived(e) {
 
@@ -317,7 +332,7 @@ To run the web app locally and connect to your local websockets notifications AP
 ### Postman to POST notifications
 If you don't use [Postman](https://www.getpostman.com/), you should. Open up Postman and create a new tab with the following configuration:
 
-```
+```json
 URI: http://localhost:8081/api/notifications
 HTTP Method: POST
 Body: raw JSON(application/json)
